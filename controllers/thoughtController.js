@@ -26,12 +26,35 @@ const getThoughtById = async (req, res) => {
 
 // Add a new thought
 const addThought = async (req, res) => {
-    
+    try {
+        const newThought = await Thought.create(req.body);
+        await User.findOneAndUpdate(
+            { _id: req.body.userId },
+            { $push: { thoughts: newThought._id } },
+            { new: true }
+        );
+        res.status(200).json(newThought);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+
 };
 
 // Update a thought by id
 const updateThought = async (req, res) => {
-    
+    try {
+        const thought = await Thought.findOneAndUpdate(
+            { _id: req.params.id },
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!thought) {
+            return res.status(404).json({ message: 'No thought with this id!' });
+        }
+        res.status(200).json(thought);
+    } catch (error) {
+        res.status(500).json(error);
+    }
 };
 
 // Remove a thought by id
