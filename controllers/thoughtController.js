@@ -59,7 +59,20 @@ const updateThought = async (req, res) => {
 
 // Remove a thought by id
 const removeThought = async (req, res) => {
-    
+    try {
+        const thought = await Thought.findByIdAndRemove(req.params.id);
+        if (!thought) {
+            return res.status(404).json({ message: 'No thought with this id!' });
+        }
+        await User.findOneAndUpdate(
+            { thoughts: req.params.id },
+            { $pull: { thoughts: req.params.id } },
+            { new: true }
+        );
+        res.status(200).json({ message: 'Thought successfully deleted!' });
+    } catch (error) {
+        res.status(500).json(error);
+    }
 };
 
 // Add a reaction to a thought
